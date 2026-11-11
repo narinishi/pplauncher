@@ -1,0 +1,1168 @@
+diff -r -U3 -N a/src/launcher_compat.h b/src/launcher_compat.h
+--- a/src/launcher_compat.h	1970-01-01 11:00:00.000000000 +1100
++++ b/src/launcher_compat.h	2026-11-11 21:49:25.383734500 +1100
+@@ -0,0 +1,170 @@
++#pragma once
++
++#include "routine.h"
++#include "rapp.h"
++
++typedef const R_STRINGREF* PCR_STRINGREF;
++
++NTSTATUS _rcl_show_errormessage (
++	_In_opt_ HWND hwnd,
++	_In_opt_ LPCWSTR title,
++	_In_opt_ LPCWSTR description,
++	_In_ LONG error_code,
++	_In_ R_ERROR_TYPE type
++);
++
++NTSTATUS _rcl_inet_begindownload (
++	_Inout_ PR_DOWNLOAD_INFO download_info,
++	_In_ HINTERNET hsession,
++	_In_ PR_STRINGREF url
++);
++
++NTSTATUS _rcl_fs_createfile (
++	_Out_ PHANDLE out_hfile,
++	_In_ PR_STRINGREF path,
++	_In_ ULONG create_disposition,
++	_In_ ACCESS_MASK desired_access,
++	_In_opt_ ULONG share_access,
++	_In_opt_ ULONG file_attributes,
++	_In_opt_ ULONG create_option,
++	_In_ BOOLEAN is_directory,
++	_In_opt_ PLARGE_INTEGER allocation_size
++);
++
++NTSTATUS _rcl_path_getfullpath (
++	_Out_ PR_STRING_PTR out_buffer,
++	_In_ PR_STRINGREF path
++);
++
++PR_STRING _rcl_config_getstring (
++	_In_ LPCWSTR key_name,
++	_In_opt_ LPCWSTR def_value,
++	_In_opt_ LPCWSTR section_name
++);
++
++PR_STRING _rcl_config_getstringexpand (
++	_In_ LPCWSTR key_name,
++	_In_opt_ LPCWSTR def_value,
++	_In_opt_ LPCWSTR section_name
++);
++
++LONG _rcl_config_getlong (
++	_In_ LPCWSTR key_name,
++	_In_opt_ LONG def_value,
++	_In_opt_ LPCWSTR section_name
++);
++
++LONG64 _rcl_config_getlong64 (
++	_In_ LPCWSTR key_name,
++	_In_opt_ LONG64 def_value,
++	_In_opt_ LPCWSTR section_name
++);
++
++BOOLEAN _rcl_config_getboolean (
++	_In_ LPCWSTR key_name,
++	_In_opt_ BOOLEAN def_value,
++	_In_opt_ LPCWSTR section_name
++);
++
++VOID _rcl_config_setlong64 (
++	_In_ LPCWSTR key_name,
++	_In_ LONG64 value,
++	_In_opt_ LPCWSTR section_name
++);
++
++BOOLEAN _rcl_config_invertboolean (
++	_In_ LPCWSTR key_name,
++	_In_ BOOLEAN def_value,
++	_In_opt_ LPCWSTR section_name
++);
++
++BOOLEAN _rcl_fs_isexists (
++	_In_ PR_STRINGREF path
++);
++
++NTSTATUS _rcl_fs_getbinarytype (
++	_In_ PR_STRINGREF path,
++	_Inout_ PULONG out_buffer
++);
++
++ULONG _rcl_str_gethash (
++	_In_ PR_STRINGREF string,
++	_In_ BOOLEAN is_ignorecase
++);
++
++ULONG _rcl_str_gethash2 (
++	_In_ LPCWSTR string,
++	_In_ BOOLEAN is_ignorecase
++);
++
++VOID _rcl_log (
++	_In_ R_LOG_LEVEL log_level,
++	_In_opt_ LPCGUID tray_guid,
++	_In_ LPCWSTR title,
++	_In_ LPCWSTR description,
++	_In_ LONG error_code
++);
++
++PR_STRINGREF _rcl_getcommandline (void);
++
++NTSTATUS _rcl_sys_createprocess (
++	_In_opt_ PR_STRINGREF file_name,
++	_In_opt_ PR_STRINGREF command_line,
++	_In_opt_ PR_STRINGREF directory,
++	_In_ BOOLEAN is_wait
++);
++
++NTSTATUS _rcl_sys_openprocess (
++	_Out_ PHANDLE out_buffer,
++	_In_ ULONG process_id,
++	_In_ ACCESS_MASK desired_access
++);
++
++NTSTATUS _rcl_sys_queryprocessstring (
++	_Out_ PR_STRING_PTR out_buffer,
++	_In_ HANDLE process_handle,
++	_In_ PROCESSINFOCLASS info_class
++);
++
++HWND _rcl_tooltip_create (
++	_In_ HWND hwnd
++);
++
++BOOLEAN _rcl_tooltip_settext (
++	_In_ HWND htip,
++	_In_ HWND hwnd,
++	_In_ INT ctrl_id,
++	_In_opt_ LPCWSTR text
++);
++
++VOID _rcl_tooltip_setstyle (
++	_In_ HWND htip,
++	_In_ BOOLEAN is_enable
++);
++
++#define _r_config_getstring(key, def, section) _rcl_config_getstring (key, def, section)
++#define _r_config_getstringexpand(key, def, section) _rcl_config_getstringexpand (key, def, section)
++#define _r_config_getlong(key, def, section) _rcl_config_getlong (key, def, section)
++#define _r_config_getlong64(key, def, section) _rcl_config_getlong64 (key, def, section)
++#define _r_config_getboolean(key, def, section) _rcl_config_getboolean (key, def, section)
++#define _r_config_setlong64(key, value, section) _rcl_config_setlong64 (key, value, section)
++#define _r_config_invertboolean(key, def, section) _rcl_config_invertboolean (key, def, section)
++
++#define _r_show_errormessage(hwnd, title, description, error_code, type) _rcl_show_errormessage (hwnd, title, description, error_code, type)
++#define _r_inet_begindownload(info, hsession, url) _rcl_inet_begindownload (info, hsession, url)
++#define _r_fs_createfile(out_hfile, path, disposition, access, share, attributes, options, is_directory, allocation_size) _rcl_fs_createfile (out_hfile, path, disposition, access, share, attributes, options, is_directory, allocation_size)
++#define _r_path_getfullpath(out_buffer, path) _rcl_path_getfullpath (out_buffer, path)
++#define _r_fs_isexists(path) _rcl_fs_isexists (path)
++#define _r_fs_getbinarytype(path, out_buffer) _rcl_fs_getbinarytype (path, out_buffer)
++#define _r_str_gethash(string, is_ignorecase) _rcl_str_gethash (string, is_ignorecase)
++#define _r_str_gethash2(string, is_ignorecase) _rcl_str_gethash2 (string, is_ignorecase)
++#define _r_log(level, guid, title, description, error_code) _rcl_log (level, guid, title, description, error_code)
++#define _r_sys_getcommandline() _rcl_getcommandline ()
++#define _r_sys_createprocess(file_name, command_line, directory, is_wait) _rcl_sys_createprocess (file_name, command_line, directory, is_wait)
++#define _r_sys_openprocess(out_buffer, process_id, desired_access) _rcl_sys_openprocess (out_buffer, process_id, desired_access)
++#define _r_sys_queryprocessstring(out_buffer, process_handle, info_class) _rcl_sys_queryprocessstring (out_buffer, process_handle, info_class)
++#define _r_wnd_sendcommand(hwnd, command_id, lparam) _r_ctrl_sendcommand (hwnd, command_id, lparam)
++#define _r_tooltip_create(hwnd) _rcl_tooltip_create (hwnd)
++#define _r_tooltip_settext(htip, hwnd, ctrl_id, text) _rcl_tooltip_settext (htip, hwnd, ctrl_id, text)
++#define _r_tooltip_setstyle(htip, is_enable) _rcl_tooltip_setstyle (htip, is_enable)
++#define NtClose(handle) CloseHandle (handle)
+diff -r -U3 -N a/src/mingw_compat.h b/src/mingw_compat.h
+--- a/src/mingw_compat.h	1970-01-01 11:00:00.000000000 +1100
++++ b/src/mingw_compat.h	2026-11-11 21:49:25.386631200 +1100
+@@ -0,0 +1,189 @@
++#pragma once
++
++#ifndef INT_ERROR
++#define INT_ERROR (-1)
++#endif
++
++#ifndef EXTERN_C_START
++#define EXTERN_C_START
++#endif
++
++#ifndef EXTERN_C_END
++#define EXTERN_C_END
++#endif
++
++#ifndef LongLongToULong
++#define LongLongToULong(value, out_value) (*(out_value) = (ULONG)(value), 0)
++#endif
++
++#ifndef LongLongToLong
++#define LongLongToLong(value, out_value) (*(out_value) = (LONG)(value), 0)
++#endif
++
++#ifndef LongLongToULongLong
++#define LongLongToULongLong(value, out_value) (*(out_value) = (ULONG64)(value), 0)
++#endif
++
++#ifndef NTSTATUS_FROM_WIN32
++#define NTSTATUS_FROM_WIN32(x) ((NTSTATUS)(((x) & 0x0000FFFF) | (FACILITY_WIN32 << 16) | 0x80000000))
++#endif
++
++#ifndef SECURITY_MAX_SID_STRING_CHARACTERS
++#define SECURITY_MAX_SID_STRING_CHARACTERS 184
++#endif
++
++#ifndef MESSAGE_RESOURCE_UTF8
++#define MESSAGE_RESOURCE_UTF8 0x0001
++#endif
++
++#ifndef STATUS_UNSATISFIED_DEPENDENCIES
++#define STATUS_UNSATISFIED_DEPENDENCIES ((NTSTATUS)0xC000014C)
++#endif
++
++#ifndef STATUS_SERVICES_FAILED_AUTOSTART
++#define STATUS_SERVICES_FAILED_AUTOSTART ((NTSTATUS)0xC0000285)
++#endif
++
++#ifndef MEMORY_PRIORITY_LOWEST
++#define MEMORY_PRIORITY_LOWEST 1
++#endif
++
++#ifndef TASK_RUN_AS_SELF
++#define TASK_RUN_AS_SELF 0x1
++#endif
++
++#ifndef CP_DROPDOWNITEM
++#define CP_DROPDOWNITEM 2
++#endif
++
++#ifndef WM_DPICHANGED_AFTERPARENT
++#define WM_DPICHANGED_AFTERPARENT 0x02E3
++#endif
++
++#ifndef SHORT_MAX
++#define SHORT_MAX 0x7FFF
++#endif
++
++#ifndef WICBitmapInterpolationModeHighQualityCubic
++#define WICBitmapInterpolationModeHighQualityCubic 0x4
++#endif
++
++#ifndef XmlWriterProperty_CompactEmptyElement
++#define XmlWriterProperty_CompactEmptyElement 4
++#endif
++
++#ifndef UFIELD_OFFSET
++#define UFIELD_OFFSET(type, field) ((ULONG_PTR)offsetof (type, field))
++#endif
++
++#ifndef FIELD_OFFSET
++#define FIELD_OFFSET(type, field) ((LONG)offsetof (type, field))
++#endif
++
++#if !defined(_MSC_VER)
++
++#ifndef DECLSPEC_RESTRICT
++#define DECLSPEC_RESTRICT __restrict
++#endif
++
++#ifndef DECLSPEC_ALLOCATOR
++#define DECLSPEC_ALLOCATOR
++#endif
++
++#ifndef _Post_invalid_
++#define _Post_invalid_
++#endif
++
++#ifndef _Post_ptr_invalid_
++#define _Post_ptr_invalid_
++#endif
++
++#ifndef _Frees_ptr_opt_
++#define _Frees_ptr_opt_
++#endif
++
++#ifndef _Frees_ptr_
++#define _Frees_ptr_
++#endif
++
++#ifndef _Interlocked_operand_
++#define _Interlocked_operand_
++#endif
++
++#ifndef _Pre_maybenull_
++#define _Pre_maybenull_
++#endif
++
++#ifndef _Post_valid_
++#define _Post_valid_
++#endif
++
++#ifndef _At_
++#define _At_(...)
++#endif
++
++#ifndef _Inout_
++#define _Inout_
++#endif
++
++#ifndef _Inout_opt_
++#define _Inout_opt_
++#endif
++
++#ifndef _Outptr_
++#define _Outptr_
++#endif
++
++#ifndef _Outptr_opt_
++#define _Outptr_opt_
++#endif
++
++#ifndef _Outptr_result_maybenull_
++#define _Outptr_result_maybenull_
++#endif
++
++#ifndef _Ret_maybenull_
++#define _Ret_maybenull_
++#endif
++
++#ifndef _Must_inspect_result_
++#define _Must_inspect_result_
++#endif
++
++#ifndef _Success_
++#define _Success_(...)
++#endif
++
++#ifndef _Check_return_
++#define _Check_return_
++#endif
++
++#ifndef _Use_decl_annotations_
++#define _Use_decl_annotations_
++#endif
++
++#ifndef _Printf_format_string_
++#define _Printf_format_string_
++#endif
++
++#ifndef _Analysis_assume_
++#define _Analysis_assume_(...)
++#endif
++
++#ifndef _Field_size_
++#define _Field_size_(...)
++#endif
++
++#ifndef _Field_size_bytes_
++#define _Field_size_bytes_(...)
++#endif
++
++#ifndef _Field_z_
++#define _Field_z_
++#endif
++
++#ifndef _Null_terminated_
++#define _Null_terminated_
++#endif
++
++#endif
+diff -r -U3 -N a/src/rapp.c b/src/rapp.c
+--- a/src/rapp.c	2026-11-07 18:40:33.000000000 +1100
++++ b/src/rapp.c	2026-11-11 21:18:41.765900200 +1100
+@@ -79,16 +79,12 @@
+ 
+ 	if (_r_initonce_begin (&init_once))
+ 	{
+-#if defined(APP_NO_MUTEX)
+ 		cached_name = _r_format_string (
+ 			L"%s-%" TEXT (PR_ULONG) L"-%" TEXT (PR_ULONG),
+ 			_r_app_getnameshort (),
+ 			_r_str_gethash (_r_sys_getimagepath (), TRUE),
+ 			_r_str_gethash (_r_sys_getcommandline (), TRUE)
+ 		);
+-#else
+-		cached_name = _r_obj_createstring (_r_app_getnameshort ());
+-#endif // APP_NO_MUTEX
+ 
+ 		_r_initonce_end (&init_once);
+ 	}
+@@ -96,6 +92,55 @@
+ 	return cached_name->buffer;
+ }
+ 
++PR_STRING _r_app_getwndowtitle ()
++{
++	static R_INITONCE init_once = PR_INITONCE_INIT;
++	static PR_STRING cached_title = NULL;
++
++	if (_r_initonce_begin (&init_once))
++	{
++		PR_STRING string;
++		BOOLEAN is_scramble;
++		ULONG_PTR length;
++
++		cached_title = _r_format_string (
++			L"%s %s %s",
++			_r_app_getname (),
++			_r_app_getversion (),
++			_r_app_getversiontype ()
++		);
++
++		string = _r_config_getstring_ex (L"IsScrambleTitle", L"false", NULL);
++
++		if (string)
++		{
++			is_scramble = _r_str_toboolean (&string->sr);
++
++			_r_obj_dereference (string);
++
++			if (is_scramble)
++			{
++				length = cached_title->length / sizeof (WCHAR);
++
++				string = _r_obj_createstring_ex (NULL, cached_title->length);
++
++				if (string)
++				{
++					_r_str_generaterandom (string->buffer, length + 1, TRUE);
++
++					_r_obj_dereference (cached_title);
++
++					cached_title = string;
++				}
++			}
++		}
++
++		_r_initonce_end (&init_once);
++	}
++
++	return cached_title;
++}
++
+ BOOLEAN _r_app_isportable ()
+ {
+ #if defined(APP_NO_APPDATA) || defined(APP_CONSOLE)
+@@ -828,7 +873,7 @@
+ 		return NULL;
+ 
+ 	// set window title
+-	_r_ctrl_setstring (hwnd, 0, _r_app_getname ());
++	_r_ctrl_setstring (hwnd, 0, _r_app_getwndowtitle ()->buffer);
+ 
+ 	// set window prop
+ 	SetPropW (hwnd, _r_app_getname (), IntToPtr (0x2A));
+@@ -4311,7 +4356,9 @@
+ 	IRegistrationInfo *registration_info = NULL;
+ 	IRegisteredTask *registered_task = NULL;
+ 	ITaskDefinition *task_definition = NULL;
++#if defined(IID_ITaskSettings2)
+ 	ITaskSettings2 *task_settings2 = NULL;
++#endif
+ 	ITaskSettings *task_settings = NULL;
+ 	ITaskService *task_service = NULL;
+ 	ITaskFolder *task_folder = NULL;
+@@ -4408,6 +4455,7 @@
+ 		ITaskSettings_put_Priority (task_settings, 1); // HIGH_PRIORITY_CLASS
+ 
+ 		// win7+
++#if defined(IID_ITaskSettings2)
+ 		status = ITaskSettings_QueryInterface (task_settings, &IID_ITaskSettings2, &task_settings2);
+ 
+ 		if (SUCCEEDED (status))
+@@ -4417,6 +4465,7 @@
+ 
+ 			ITaskSettings2_Release (task_settings2);
+ 		}
++#endif
+ 
+ 		status = ITaskDefinition_get_Principal (task_definition, &principal);
+ 
+@@ -4829,6 +4878,10 @@
+ 
+ 		_r_wnd_sendmessage (hwnd, 0, WM_THEMECHANGED, 0, 0);
+ 	}
++	else if (_r_str_isequal2 (&class_name->sr, HOTKEY_CLASS, TRUE))
++	{
++		_r_theme_initializecontext (hwnd, NULL, &_r_theme_hotkey_subclass, is_enable);
++	}
+ 	else if (_r_str_isequal2 (&class_name->sr, WC_HEADER, TRUE))
+ 	{
+ 		SetWindowTheme (hwnd, is_enable ? L"DarkMode_ItemsView" : L"Explorer", NULL);
+@@ -5760,6 +5813,156 @@
+ 		}
+ 	}
+ 
++	return CallWindowProcW (wnd_proc, hwnd, msg, wparam, lparam);
++}
++
++LRESULT CALLBACK _r_theme_hotkey_subclass (
++	_In_ HWND hwnd,
++	_In_ UINT msg,
++	_In_ WPARAM wparam,
++	_In_ LPARAM lparam
++)
++{
++	PR_THEME_CONTEXT context;
++	WNDPROC wnd_proc;
++
++	context = _r_wnd_getcontext (hwnd, 666);
++
++	if (!context)
++		return DefWindowProcW (hwnd, msg, wparam, lparam);
++
++	wnd_proc = context->wnd_proc;
++
++	switch (msg)
++	{
++		case WM_NCDESTROY:
++		{
++			_r_theme_cleanup (hwnd, context);
++			break;
++		}
++
++		case WM_THEMECHANGED:
++		case WM_DPICHANGED:
++		{
++			InvalidateRect (hwnd, NULL, FALSE);
++			break;
++		}
++
++		case WM_ERASEBKGND:
++		{
++			HDC hdc = (HDC)wparam;
++			RECT rect;
++
++			if (GetClientRect (hwnd, &rect))
++				_r_dc_fillrect (hdc, &rect, _r_theme_isenabled () ? WND_BACKGROUND_CLR : GetSysColor (COLOR_WINDOW));
++
++			return TRUE;
++		}
++
++		case WM_NCPAINT:
++		{
++			HDC hdc = GetWindowDC (hwnd);
++
++			if (hdc)
++			{
++				RECT rect;
++
++				if (GetClientRect (hwnd, &rect))
++				{
++					COLORREF clr_prev = SetDCBrushColor (hdc, 0x404040);
++
++					FrameRect (hdc, &rect, GetStockObject (DC_BRUSH));
++
++					if (clr_prev != CLR_INVALID)
++						SetDCBrushColor (hdc, clr_prev);
++				}
++
++				ReleaseDC (hwnd, hdc);
++			}
++
++			return 0;
++		}
++
++		case WM_PRINTCLIENT:
++		{
++			HDC hdc = (HDC)wparam;
++			RECT rect;
++			WCHAR key_name[128];
++			WCHAR hotkey_text[256] = {0};
++			BYTE vks[4];
++			WORD hotkey;
++			BYTE vk;
++			BYTE mods;
++			ULONG count;
++			ULONG_PTR length;
++			PR_STRING string;
++
++			if (!hdc || !GetClientRect (hwnd, &rect))
++				break;
++
++			hotkey = (WORD)_r_wnd_sendmessage (hwnd, 0, HKM_GETHOTKEY, 0, 0);
++			vk = LOBYTE (hotkey);
++			mods = HIBYTE (hotkey);
++			count = 0;
++
++			if (vk)
++			{
++				if (mods & HOTKEYF_CONTROL)
++					vks[count++] = VK_CONTROL;
++
++				if (mods & HOTKEYF_ALT)
++					vks[count++] = VK_MENU;
++
++				if (mods & HOTKEYF_SHIFT)
++					vks[count++] = VK_SHIFT;
++
++				vks[count++] = vk;
++
++				for (ULONG i = 0; i < count; i++)
++				{
++					if (!GetKeyNameTextW (((MapVirtualKeyW (vks[i], MAPVK_VK_TO_VSC) & 0xffff) << 16), key_name, RTL_NUMBER_OF (key_name)))
++						continue;
++
++					if (hotkey_text[0])
++						_r_str_appendformat (hotkey_text, RTL_NUMBER_OF (hotkey_text), L"+%s", key_name);
++					else
++						_r_str_printf (hotkey_text, RTL_NUMBER_OF (hotkey_text), L"%s", key_name);
++				}
++			}
++			else
++			{
++				_r_str_printf (hotkey_text, RTL_NUMBER_OF (hotkey_text), L"<none>");
++			}
++
++			length = _r_str_getlength (hotkey_text);
++
++			if (length && hotkey_text[length - 1] == L'+')
++				hotkey_text[length - 1] = UNICODE_NULL;
++
++			string = _r_obj_createstring (hotkey_text);
++
++			if (string)
++			{
++				rect.left += 2;
++
++				_r_dc_drawtext (
++					NULL,
++					hdc,
++					&string->sr,
++					&rect,
++					0,
++					0,
++					DT_LEFT | DT_VCENTER | DT_SINGLELINE,
++					_r_theme_isenabled () ? WND_TEXT_CLR : GetSysColor (COLOR_WINDOWTEXT)
++				);
++
++				_r_obj_dereference (string);
++			}
++
++			return 0;
++		}
++	}
++
+ 	return CallWindowProcW (wnd_proc, hwnd, msg, wparam, lparam);
+ }
+ 
+diff -r -U3 -N a/src/rapp.h b/src/rapp.h
+--- a/src/rapp.h	2026-11-07 18:40:33.000000000 +1100
++++ b/src/rapp.h	2026-11-11 21:16:31.121591300 +1100
+@@ -415,6 +415,13 @@
+ 	_In_ LPARAM lparam
+ );
+ 
++LRESULT CALLBACK _r_theme_hotkey_subclass (
++	_In_ HWND hwnd,
++	_In_ UINT msg,
++	_In_ WPARAM wparam,
++	_In_ LPARAM lparam
++);
++
+ LRESULT CALLBACK _r_theme_rebar_subclass (
+ 	_In_ HWND hwnd,
+ 	_In_ UINT msg,
+@@ -620,6 +627,8 @@
+ 
+ LPWSTR _r_app_getmutexname ();
+ 
++PR_STRING _r_app_getwndowtitle ();
++
+ BOOLEAN _r_app_isportable ();
+ 
+ BOOLEAN _r_app_initialize_com ();
+diff -r -U3 -N a/src/routine.c b/src/routine.c
+--- a/src/routine.c	2026-11-07 18:40:33.000000000 +1100
++++ b/src/routine.c	2026-11-11 21:18:22.149198500 +1100
+@@ -1983,6 +1983,13 @@
+ 	}
+ }
+ 
++VOID NTAPI _r_obj_dereference (
++	_In_ PVOID object_body
++)
++{
++	_r_obj_dereference_ex (object_body, 1);
++}
++
+ VOID NTAPI _r_obj_movereference (
+ 	_Inout_ PVOID_PTR object_body,
+ 	_In_opt_ PVOID new_object
+@@ -3396,21 +3403,81 @@
+ 
+ 			_r_wnd_center (hwnd, hparent);
+ 
+-			// set on top (always)
+-			_r_wnd_top (hwnd, TRUE);
++			SetFocus (hwnd);
+ 
+-			// don't round corners
+-			if (_r_sys_isosversiongreaterorequal (WINDOWS_11))
+-				DwmSetWindowAttribute (hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &(DWM_WINDOW_CORNER_PREFERENCE){ DWMWCP_DONOTROUND }, sizeof (DWM_WINDOW_CORNER_PREFERENCE));
++			// set on top (always)
++			SetWindowPos (
++				hwnd,
++				HWND_TOPMOST,
++				0,
++				0,
++				0,
++				0,
++				SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_DRAWFRAME | SWP_NOOWNERZORDER
++			);
+ 
+ 			break;
+ 		}
+ 
+ 		case TDN_DIALOG_CONSTRUCTED:
+ 		{
++			PR_STRING string;
++			BOOL is_dark;
++			BOOLEAN is_enable;
++			COLORREF clr;
++			DWM_WINDOW_CORNER_PREFERENCE corner_pref;
++			enum DWM_SYSTEMBACKDROP_TYPE backdrop_type;
++
+ 			// remove window icon
+ 			_r_wnd_seticon (hwnd, NULL, NULL);
+ 
++			// disable forced dark mode (win10 rs5+)
++			if (_r_sys_isosversiongreaterorequal (WINDOWS_10_RS5))
++			{
++				is_dark = FALSE;
++
++				if (FAILED (DwmSetWindowAttribute (hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &is_dark, sizeof (is_dark))))
++					DwmSetWindowAttribute (hwnd, 19, &is_dark, sizeof (is_dark));
++			}
++
++			// configure window border and corners (win11+)
++			if (_r_sys_isosversiongreaterorequal (WINDOWS_11))
++			{
++				clr = DWMWA_COLOR_DEFAULT;
++
++				DwmSetWindowAttribute (hwnd, DWMWA_CAPTION_COLOR, &clr, sizeof (clr));
++
++				string = _r_config_getstring_ex (L"IsWindowBorderEnabled", L"true", NULL);
++
++				if (string)
++				{
++					is_enable = _r_str_toboolean (&string->sr);
++
++					_r_obj_dereference (string);
++
++					if (is_enable)
++						DwmSetWindowAttribute (hwnd, DWMWA_BORDER_COLOR, &clr, sizeof (clr));
++				}
++
++				string = _r_config_getstring_ex (L"IsWindowCornerRound", L"false", NULL);
++				is_enable = string ? _r_str_toboolean (&string->sr) : FALSE;
++
++				if (string)
++					_r_obj_dereference (string);
++
++				corner_pref = is_enable ? DWMWCP_DEFAULT : DWMWCP_DONOTROUND;
++
++				DwmSetWindowAttribute (hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_pref, sizeof (corner_pref));
++			}
++
++			// disable system backdrop (win11 22h2+)
++			if (_r_sys_isosversiongreaterorequal (WINDOWS_11_22H2))
++			{
++				backdrop_type = DWMSBT_NONE;
++
++				DwmSetWindowAttribute (hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop_type, sizeof (backdrop_type));
++			}
++
+ 			//if (_r_theme_isenabled ())
+ 			//	_r_theme_initializetaskdialogtheme (hwnd, 0);
+ 
+@@ -14124,14 +14191,25 @@
+ 	if (_r_sys_isosversiongreaterorequal (WINDOWS_10))
+ 		WinHttpSetOption (hsession, WINHTTP_OPTION_ENABLE_HTTP_PROTOCOL, &(ULONG){WINHTTP_PROTOCOL_FLAG_HTTP2}, sizeof (ULONG));
+ 
+-	// disable global, cross-session pooling (win11+)
++	// improve connection fallback and http2 stream handling (win10 rs5+)
++	if (_r_sys_isosversiongreaterorequal (WINDOWS_10_RS5))
++	{
++		WinHttpSetOption (hsession, WINHTTP_OPTION_DISABLE_STREAM_QUEUE, &(ULONG){TRUE}, sizeof (ULONG));
++		WinHttpSetOption (hsession, WINHTTP_OPTION_IPV6_FAST_FALLBACK, &(ULONG){TRUE}, sizeof (ULONG));
++	}
++
++	// disable global, cross-session pooling and enable tcp fast open (win11+)
+ 	if (_r_sys_isosversiongreaterorequal (WINDOWS_11))
+ 	{
+ 		WinHttpSetOption (hsession, WINHTTP_OPTION_DISABLE_GLOBAL_POOLING, &(ULONG){TRUE}, sizeof (ULONG));
+-
+-		WinHttpSetOption (hsession, WINHTTP_OPTION_TLS_FALSE_START, &(ULONG){TRUE}, sizeof (ULONG));
++		WinHttpSetOption (hsession, WINHTTP_OPTION_TCP_FALSE_START, &(ULONG){TRUE}, sizeof (ULONG));
++		WinHttpSetOption (hsession, WINHTTP_OPTION_TCP_FAST_OPEN, &(ULONG){TRUE}, sizeof (ULONG));
+ 	}
+ 
++	// limit http3 handshake stalls when udp is blocked (win11 24h2+)
++	if (_r_sys_isosversiongreaterorequal (WINDOWS_11_24H2))
++		WinHttpSetOption (hsession, WINHTTP_OPTION_HTTP3_HANDSHAKE_TIMEOUT, &(ULONG){5000}, sizeof (ULONG));
++
+ 	return hsession;
+ }
+ 
+@@ -14646,27 +14724,27 @@
+ 
+ 	switch ((ULONG_PTR)hroot)
+ 	{
+-		case HKEY_CLASSES_ROOT:
++		case (ULONG_PTR)HKEY_CLASSES_ROOT:
+ 		{
+ 			return hkeyhkcr;
+ 		}
+ 
+-		case HKEY_CURRENT_USER:
++		case (ULONG_PTR)HKEY_CURRENT_USER:
+ 		{
+ 			return hkeyhkcu;
+ 		}
+ 
+-		case HKEY_LOCAL_MACHINE:
++		case (ULONG_PTR)HKEY_LOCAL_MACHINE:
+ 		{
+ 			return hkeyhklm;
+ 		}
+ 
+-		case HKEY_USERS:
++		case (ULONG_PTR)HKEY_USERS:
+ 		{
+ 			return hkeyhku;
+ 		}
+ 
+-		case HKEY_CURRENT_CONFIG:
++		case (ULONG_PTR)HKEY_CURRENT_CONFIG:
+ 		{
+ 			return hkeyhcc;
+ 		}
+@@ -19709,3 +19787,302 @@
+ 
+ 	SAFE_DELETE_REFERENCE (object_ptr->object_body);
+ }
++
++//
++// Launcher compatibility
++//
++
++NTSTATUS _rcl_show_errormessage (
++	_In_opt_ HWND hwnd,
++	_In_opt_ LPCWSTR title,
++	_In_opt_ LPCWSTR description,
++	_In_ LONG error_code,
++	_In_ R_ERROR_TYPE type
++)
++{
++	return _r_show_errormessage (hwnd, title, error_code, description, type);
++}
++
++NTSTATUS _rcl_inet_begindownload (
++	_Inout_ PR_DOWNLOAD_INFO download_info,
++	_In_ HINTERNET hsession,
++	_In_ PR_STRINGREF url
++)
++{
++	return _r_inet_begindownload (hsession, url, download_info);
++}
++
++NTSTATUS _rcl_fs_createfile (
++	_Out_ PHANDLE out_hfile,
++	_In_ PR_STRINGREF path,
++	_In_ ULONG create_disposition,
++	_In_ ACCESS_MASK desired_access,
++	_In_opt_ ULONG share_access,
++	_In_opt_ ULONG file_attributes,
++	_In_opt_ ULONG create_option,
++	_In_ BOOLEAN is_directory,
++	_In_opt_ PLARGE_INTEGER allocation_size
++)
++{
++	return _r_fs_createfile (path, create_disposition, desired_access, share_access, file_attributes, create_option, is_directory, allocation_size, out_hfile);
++}
++
++NTSTATUS _rcl_path_getfullpath (
++	_Out_ PR_STRING_PTR out_buffer,
++	_In_ PR_STRINGREF path
++)
++{
++	return _r_path_getfullpath (path ? path->buffer : NULL, out_buffer);
++}
++
++PR_STRING _rcl_config_getstring (
++	_In_ LPCWSTR key_name,
++	_In_opt_ LPCWSTR def_value,
++	_In_opt_ LPCWSTR section_name
++)
++{
++	return _r_config_getstring_ex (key_name, def_value, section_name);
++}
++
++PR_STRING _rcl_config_getstringexpand (
++	_In_ LPCWSTR key_name,
++	_In_opt_ LPCWSTR def_value,
++	_In_opt_ LPCWSTR section_name
++)
++{
++	return _r_config_getstringexpand_ex (key_name, def_value, section_name);
++}
++
++LONG _rcl_config_getlong (
++	_In_ LPCWSTR key_name,
++	_In_opt_ LONG def_value,
++	_In_opt_ LPCWSTR section_name
++)
++{
++	return _r_config_getlong_ex (key_name, def_value, section_name);
++}
++
++LONG64 _rcl_config_getlong64 (
++	_In_ LPCWSTR key_name,
++	_In_opt_ LONG64 def_value,
++	_In_opt_ LPCWSTR section_name
++)
++{
++	return _r_config_getlong64_ex (key_name, def_value, section_name);
++}
++
++BOOLEAN _rcl_config_getboolean (
++	_In_ LPCWSTR key_name,
++	_In_opt_ BOOLEAN def_value,
++	_In_opt_ LPCWSTR section_name
++)
++{
++	return _r_config_getboolean_ex (key_name, def_value, section_name);
++}
++
++VOID _rcl_config_setlong64 (
++	_In_ LPCWSTR key_name,
++	_In_ LONG64 value,
++	_In_opt_ LPCWSTR section_name
++)
++{
++	_r_config_setlong64_ex (key_name, value, section_name);
++}
++
++BOOLEAN _rcl_config_invertboolean (
++	_In_ LPCWSTR key_name,
++	_In_ BOOLEAN def_value,
++	_In_opt_ LPCWSTR section_name
++)
++{
++	BOOLEAN value = !_r_config_getboolean_ex (key_name, def_value, section_name);
++
++	_r_config_setboolean_ex (key_name, value, section_name);
++
++	return value;
++}
++
++BOOLEAN _rcl_fs_isexists (
++	_In_ PR_STRINGREF path
++)
++{
++	return _r_fs_exists (path);
++}
++
++NTSTATUS _rcl_fs_getbinarytype (
++	_In_ PR_STRINGREF path,
++	_Inout_ PULONG out_buffer
++)
++{
++	return _r_sys_getbinarytype (path, out_buffer);
++}
++
++ULONG _rcl_str_gethash (
++	_In_ PR_STRINGREF string,
++	_In_ BOOLEAN is_ignorecase
++)
++{
++	return _r_str_gethash2 (string, is_ignorecase);
++}
++
++ULONG _rcl_str_gethash2 (
++	_In_ LPCWSTR string,
++	_In_ BOOLEAN is_ignorecase
++)
++{
++	return _r_str_gethash ((LPWSTR)string, is_ignorecase);
++}
++
++VOID _rcl_log (
++	_In_ R_LOG_LEVEL log_level,
++	_In_opt_ LPCGUID tray_guid,
++	_In_ LPCWSTR title,
++	_In_ LPCWSTR description,
++	_In_ LONG error_code
++)
++{
++	_r_log (log_level, tray_guid, title, error_code, description);
++}
++
++PR_STRINGREF _rcl_getcommandline (void)
++{
++	static R_STRINGREF command_line;
++	LPWSTR buffer = _r_sys_getcommandline ();
++
++	command_line.buffer = buffer;
++	command_line.length = buffer ? _r_str_getlength (buffer) * sizeof (WCHAR) : 0;
++
++	return &command_line;
++}
++
++NTSTATUS _rcl_sys_createprocess (
++	_In_opt_ PR_STRINGREF file_name,
++	_In_opt_ PR_STRINGREF command_line,
++	_In_opt_ PR_STRINGREF directory,
++	_In_ BOOLEAN is_wait
++)
++{
++	return _r_sys_createprocess (
++		file_name ? file_name->buffer : NULL,
++		command_line ? command_line->buffer : NULL,
++		directory ? directory->buffer : NULL,
++		is_wait
++	);
++}
++
++NTSTATUS _rcl_sys_openprocess (
++	_Out_ PHANDLE out_buffer,
++	_In_ ULONG process_id,
++	_In_ ACCESS_MASK desired_access
++)
++{
++	return _r_sys_openprocess ((HANDLE)(ULONG_PTR)process_id, desired_access, out_buffer);
++}
++
++NTSTATUS _rcl_sys_queryprocessstring (
++	_Out_ PR_STRING_PTR out_buffer,
++	_In_ HANDLE process_handle,
++	_In_ PROCESSINFOCLASS info_class
++)
++{
++	return _r_sys_queryprocessstring (process_handle, info_class, out_buffer);
++}
++
++static WCHAR tooltip_text[1024];
++
++static LRESULT CALLBACK _rcl_tooltip_owner_proc (
++	_In_ HWND hwnd,
++	_In_ UINT msg,
++	_In_ WPARAM wparam,
++	_In_ LPARAM lparam,
++	_In_ UINT_PTR subclass_id,
++	_In_ DWORD_PTR ref_data
++)
++{
++	UNREFERENCED_PARAMETER (wparam);
++	UNREFERENCED_PARAMETER (subclass_id);
++
++	if (msg == WM_NOTIFY)
++	{
++		NMHDR* hdr = (NMHDR*)lparam;
++
++		if (hdr->code == TTN_GETDISPINFOW && hdr->hwndFrom == (HWND)ref_data)
++		{
++			NMTTDISPINFOW* disp_info = (NMTTDISPINFOW*)lparam;
++			HWND control = (HWND)disp_info->hdr.idFrom;
++
++			if (control)
++			{
++				GetWindowTextW (control, tooltip_text, RTL_NUMBER_OF (tooltip_text));
++				disp_info->lpszText = tooltip_text;
++			}
++
++			return 0;
++		}
++	}
++
++	return DefSubclassProc (hwnd, msg, wparam, lparam);
++}
++
++HWND _rcl_tooltip_create (
++	_In_ HWND hwnd
++)
++{
++	HWND htip = CreateWindowExW (
++		WS_EX_TOPMOST,
++		TOOLTIPS_CLASSW,
++		NULL,
++		WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX,
++		CW_USEDEFAULT,
++		CW_USEDEFAULT,
++		CW_USEDEFAULT,
++		CW_USEDEFAULT,
++		hwnd,
++		NULL,
++		NULL,
++		NULL
++	);
++
++	if (htip)
++	{
++		SetWindowPos (htip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
++		SetWindowSubclass (hwnd, &_rcl_tooltip_owner_proc, 0x544F4F4C, (DWORD_PTR)htip);
++	}
++
++	return htip;
++}
++
++BOOLEAN _rcl_tooltip_settext (
++	_In_ HWND htip,
++	_In_ HWND hwnd,
++	_In_ INT ctrl_id,
++	_In_opt_ LPCWSTR text
++)
++{
++	TOOLINFOW tool_info = {0};
++
++	if (!htip)
++		return FALSE;
++
++	tool_info.cbSize = sizeof (tool_info);
++	tool_info.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
++	tool_info.hwnd = hwnd;
++	tool_info.uId = (UINT_PTR)GetDlgItem (hwnd, ctrl_id);
++	tool_info.lpszText = (LPWSTR)text;
++
++	if (!tool_info.uId)
++		return FALSE;
++
++	return !!SendMessageW (htip, TTM_ADDTOOLW, 0, (LPARAM)&tool_info);
++}
++
++VOID _rcl_tooltip_setstyle (
++	_In_ HWND htip,
++	_In_ BOOLEAN is_enable
++)
++{
++	if (!htip)
++		return;
++
++	SendMessageW (htip, TTM_SETMAXTIPWIDTH, 0, is_enable ? 300 : -1);
++}
+diff -r -U3 -N a/src/routine.h b/src/routine.h
+--- a/src/routine.h	2026-11-07 18:40:33.000000000 +1100
++++ b/src/routine.h	2026-11-11 17:46:12.041135300 +1100
+@@ -5,6 +5,8 @@
+ 
+ #pragma once
+ 
++#include "mingw_compat.h"
++
+ // fix windot11.h errors
+ #if !defined(__WINDOT11_H__)
+ #define __WINDOT11_H__
+@@ -861,12 +863,9 @@
+ 	_r_obj_movereference (object_body, NULL);
+ }
+ 
+-FORCEINLINE VOID NTAPI _r_obj_dereference (
++VOID NTAPI _r_obj_dereference (
+ 	_In_ PVOID object_body
+-)
+-{
+-	_r_obj_dereference_ex (object_body, 1);
+-}
++);
+ 
+ #define _r_obj_isempty(obj) \
+ 	((obj) == NULL || (obj)->count == 0)

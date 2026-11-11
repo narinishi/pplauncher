@@ -1,0 +1,387 @@
+diff -r -U3 -N a/src/main.c b/src/main.c
+--- a/src/main.c	2026-11-08 04:00:15.000000000 +1100
++++ b/src/main.c	2026-11-11 18:02:00.013660000 +1100
+@@ -5,6 +5,7 @@
+ 
+ #include "main.h"
+ #include "rapp.h"
++#include "launcher_compat.h"
+ 
+ #include "7z.h"
+ #include "7zAlloc.h"
+@@ -14,6 +15,8 @@
+ #include "7zWindows.h"
+ #include "miniz.h"
+ 
++#include "cJSON.h"
++
+ #include "resource.h"
+ 
+ BROWSER_INFORMATION browser_info = {0};
+@@ -659,6 +662,312 @@
+ 	return IDS_ACTION_CHECK;
+ }
+ 
++static BOOLEAN _app_str_contains_i (
++	_In_ LPCSTR string,
++	_In_ LPCSTR substring
++)
++{
++	size_t substring_length = strlen (substring);
++
++	if (!substring_length)
++		return TRUE;
++
++	for (; *string; string++)
++	{
++		size_t i;
++
++		for (i = 0; i < substring_length; i++)
++		{
++			CHAR a = string[i];
++			CHAR b = substring[i];
++
++			if (!a)
++				return FALSE;
++
++			if (a >= 'A' && a <= 'Z')
++				a += 'a' - 'A';
++
++			if (b >= 'A' && b <= 'Z')
++				b += 'a' - 'A';
++
++			if (a != b)
++				break;
++		}
++
++		if (i == substring_length)
++			return TRUE;
++	}
++
++	return FALSE;
++}
++
++static BOOLEAN _app_str_endsswith_i (
++	_In_ LPCSTR string,
++	_In_ LPCSTR suffix
++)
++{
++	size_t string_length = strlen (string);
++	size_t suffix_length = strlen (suffix);
++
++	if (suffix_length > string_length)
++		return FALSE;
++
++	string += string_length - suffix_length;
++
++	for (size_t i = 0; i < suffix_length; i++)
++	{
++		CHAR a = string[i];
++		CHAR b = suffix[i];
++
++		if (a >= 'A' && a <= 'Z')
++			a += 'a' - 'A';
++
++		if (b >= 'A' && b <= 'Z')
++			b += 'a' - 'A';
++
++		if (a != b)
++			return FALSE;
++	}
++
++	return TRUE;
++}
++
++static PR_STRING _app_utf8_to_string (
++	_In_ LPCSTR string
++)
++{
++	PR_STRING out_string;
++	LPWSTR buffer;
++	int length;
++
++	if (!string || !*string)
++		return NULL;
++
++	length = MultiByteToWideChar (CP_UTF8, 0, string, -1, NULL, 0);
++
++	if (length <= 0)
++		return NULL;
++
++	buffer = _r_mem_allocate ((ULONG_PTR)length * sizeof (WCHAR));
++
++	if (!buffer)
++		return NULL;
++
++	if (!MultiByteToWideChar (CP_UTF8, 0, string, -1, buffer, length))
++	{
++		_r_mem_free (buffer);
++
++		return NULL;
++	}
++
++	out_string = _r_obj_createstring (buffer);
++
++	_r_mem_free (buffer);
++
++	return out_string;
++}
++
++static BOOLEAN _app_is_github_release_url (
++	_In_ PR_STRING url
++)
++{
++	if (!url || !url->buffer)
++		return FALSE;
++
++	return StrStrIW (url->buffer, L"api.github.com") != NULL && StrStrIW (url->buffer, L"/releases/latest") != NULL;
++}
++
++static BOOLEAN _app_is_github_asset_match (
++	_In_ LPCSTR name,
++	_In_ PBROWSER_INFORMATION pbi
++)
++{
++	BOOLEAN is_brave_type;
++	BOOLEAN is_origin_type;
++
++	if (!name || !*name)
++		return FALSE;
++
++	if (!_app_str_endsswith_i (name, ".zip") && !_app_str_endsswith_i (name, ".7z"))
++		return FALSE;
++
++	if (_app_str_contains_i (name, "symbols") ||
++		_app_str_contains_i (name, ".sha256") ||
++		_app_str_contains_i (name, ".asc") ||
++		_app_str_contains_i (name, ".pdb") ||
++		_app_str_contains_i (name, "dsym") ||
++		_app_str_contains_i (name, "debug"))
++	{
++		return FALSE;
++	}
++
++	if (_app_str_contains_i (name, "linux") ||
++		_app_str_contains_i (name, "darwin") ||
++		_app_str_contains_i (name, "macos") ||
++		_app_str_contains_i (name, "osx") ||
++		_app_str_contains_i (name, "android") ||
++		_app_str_contains_i (name, "ios"))
++	{
++		return FALSE;
++	}
++
++	if (!_app_str_contains_i (name, "win") && !_app_str_contains_i (name, "windows"))
++		return FALSE;
++
++	is_brave_type = pbi->browser_type && StrStrIW (pbi->browser_type->buffer, L"brave") != NULL;
++	is_origin_type = pbi->browser_type && StrStrIW (pbi->browser_type->buffer, L"origin") != NULL;
++
++	if (is_brave_type && !_app_str_contains_i (name, "brave"))
++		return FALSE;
++
++	if (is_origin_type)
++	{
++		if (!_app_str_contains_i (name, "origin"))
++			return FALSE;
++	}
++	else if (_app_str_contains_i (name, "origin"))
++	{
++		return FALSE;
++	}
++
++	if (pbi->architecture == 64)
++	{
++		if (_app_str_contains_i (name, "arm64") || _app_str_contains_i (name, "aarch64"))
++			return FALSE;
++
++		if (!_app_str_contains_i (name, "x64") && !_app_str_contains_i (name, "amd64") && !_app_str_contains_i (name, "x86_64"))
++			return FALSE;
++	}
++	else
++	{
++		if (_app_str_contains_i (name, "x64") ||
++			_app_str_contains_i (name, "amd64") ||
++			_app_str_contains_i (name, "x86_64") ||
++			_app_str_contains_i (name, "arm64") ||
++			_app_str_contains_i (name, "aarch64"))
++		{
++			return FALSE;
++		}
++
++		if (!_app_str_contains_i (name, "ia32") && !_app_str_contains_i (name, "x86") && !_app_str_contains_i (name, "win32"))
++			return FALSE;
++	}
++
++	return TRUE;
++}
++
++static BOOLEAN _app_parse_github_latest (
++	_In_ PR_STRING response,
++	_Inout_ PBROWSER_INFORMATION pbi,
++	_Out_ PBOOLEAN is_error_ptr
++)
++{
++	BOOLEAN is_found = FALSE;
++	cJSON *asset;
++	cJSON *assets;
++	cJSON *root;
++	cJSON *tag;
++	LPCSTR download_url = NULL;
++	LPCSTR version;
++	LPSTR utf8_body;
++	int utf8_length;
++
++	*is_error_ptr = FALSE;
++
++	if (!response || !response->buffer || !response->length)
++	{
++		*is_error_ptr = TRUE;
++
++		return FALSE;
++	}
++
++	utf8_length = WideCharToMultiByte (CP_UTF8, 0, response->buffer, (int)(response->length / sizeof (WCHAR)), NULL, 0, NULL, NULL);
++
++	if (utf8_length <= 0)
++	{
++		*is_error_ptr = TRUE;
++
++		return FALSE;
++	}
++
++	utf8_body = _r_mem_allocate ((ULONG_PTR)utf8_length + 1);
++
++	if (!utf8_body)
++	{
++		*is_error_ptr = TRUE;
++
++		return FALSE;
++	}
++
++	WideCharToMultiByte (CP_UTF8, 0, response->buffer, (int)(response->length / sizeof (WCHAR)), utf8_body, utf8_length, NULL, NULL);
++	utf8_body[utf8_length] = ANSI_NULL;
++
++	root = cJSON_Parse (utf8_body);
++
++	_r_mem_free (utf8_body);
++
++	if (!root)
++	{
++		*is_error_ptr = TRUE;
++
++		return FALSE;
++	}
++
++	tag = cJSON_GetObjectItemCaseSensitive (root, "tag_name");
++	assets = cJSON_GetObjectItemCaseSensitive (root, "assets");
++
++	if (!cJSON_IsString (tag) || !tag->valuestring || !cJSON_IsArray (assets))
++	{
++		cJSON_Delete (root);
++
++		*is_error_ptr = TRUE;
++
++		return FALSE;
++	}
++
++	cJSON_ArrayForEach (asset, assets)
++	{
++		cJSON *name = cJSON_GetObjectItemCaseSensitive (asset, "name");
++		cJSON *url = cJSON_GetObjectItemCaseSensitive (asset, "browser_download_url");
++
++		if (!cJSON_IsString (name) || !cJSON_IsString (url))
++			continue;
++
++		if (!_app_is_github_asset_match (name->valuestring, pbi))
++			continue;
++
++		download_url = url->valuestring;
++		is_found = TRUE;
++
++		break;
++	}
++
++	version = tag->valuestring;
++
++	if (*version == 'v' || *version == 'V')
++		version++;
++
++	if (is_found && *version)
++	{
++		_r_obj_movereference ((PVOID_PTR)&pbi->download_url, _app_utf8_to_string (download_url));
++		_r_obj_movereference ((PVOID_PTR)&pbi->new_version, _app_utf8_to_string (version));
++	}
++
++	cJSON_Delete (root);
++
++	if (!is_found || _r_obj_isstringempty (pbi->download_url) || _r_obj_isstringempty (pbi->new_version))
++	{
++		SAFE_DELETE_REFERENCE (pbi->download_url);
++		SAFE_DELETE_REFERENCE (pbi->new_version);
++
++		*is_error_ptr = TRUE;
++
++		return FALSE;
++	}
++
++	return TRUE;
++}
++
+ static BOOLEAN _app_checkupdate (
+ 	_In_ HWND hwnd,
+ 	_In_ PBROWSER_INFORMATION pbi,
+@@ -669,7 +978,7 @@
+ 	PR_HASHTABLE hashtable = NULL;
+ 	R_DOWNLOAD_INFO download_info;
+ 	HINTERNET hsession;
+-	BOOLEAN is_exists, is_newversion = FALSE, is_success = FALSE, is_updaterequired;
++	BOOLEAN is_exists, is_github_release = FALSE, is_newversion = FALSE, is_success = FALSE, is_updaterequired;
+ 	NTSTATUS status;
+ 
+ 	*is_error_ptr = FALSE;
+@@ -698,6 +1007,8 @@
+ 
+ 		if (url)
+ 		{
++			is_github_release = _app_is_github_release_url (url);
++
+ 			proxy_string = _r_app_getproxyconfiguration ();
+ 
+ 			hsession = _r_inet_createsession (_r_app_getuseragent (), proxy_string);
+@@ -718,6 +1029,10 @@
+ 
+ 						*is_error_ptr = TRUE;
+ 					}
++					else if (is_github_release)
++					{
++						_app_parse_github_latest (string, pbi, is_error_ptr);
++					}
+ 					else
+ 					{
+ 						hashtable = _r_str_unserialize (&string->sr, L';', L'=');
+@@ -787,6 +1102,24 @@
+ 
+ 		_r_obj_dereference (hashtable);
+ 	}
++	else if (is_github_release && _app_ishaveupdate (pbi))
++	{
++		_app_update_browser_info (hwnd, &browser_info);
++
++		if (pbi->new_version && pbi->current_version)
++			is_newversion = (_r_str_versioncompare (&pbi->current_version->sr, &pbi->new_version->sr) == -1);
++
++		if (!is_exists || is_newversion)
++		{
++			is_success = TRUE;
++		}
++		else
++		{
++			SAFE_DELETE_REFERENCE (pbi->download_url); // clear download url if update was not found
++
++			_r_config_setlong64 (L"ChromiumLastCheck", _r_unixtime_now (), NULL);
++		}
++	}
+ 
+ 	_app_setstatus (hwnd, pbi->htaskbar, NULL, 0, 0);
+ 
